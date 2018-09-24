@@ -1,0 +1,45 @@
+﻿@inject Services.ITodoService TodoService
+
+<div class="card">
+	<div class="card-body">
+		<h5 class="card-title">@Item.Title</h5>
+		@if ( !Item.Completed && Item.DueDate < DateTime.Now.Date )
+		{
+			<h6 class="card-subtitle text-danger font-weight-bold">Overdue: @Item.DueDate.ToShortDateString()</h6>
+		}
+		else if ( Item.Completed )
+		{
+			<h6 class="card-subtitle text-success font-weight-bold"><span class="oi oi-check"></span> Completed!</h6>
+		}
+		else
+		{
+			<h6 class="card-subtitle text-muted">Due: @Item.DueDate.ToShortDateString()</h6>
+		}
+		<p class="card-text">@Item.Description</p>
+		@if( !Item.Completed )
+		{
+			<button type="button" class="btn  btn-success btn-sm" onclick="@(() => Complete( Item.ItemId ) )"><span class="oi oi-check" title="complete" aria-hidden="true"></span></button>
+			<button type="button" class="btn btn-danger btn-sm"  onclick="@(() => Delete( Item.ItemId ) )"><span class="oi oi-delete" title="delete" aria-hidden="true"></span></button>
+		}
+	</div>
+</div>
+
+@functions {
+	[Parameter]
+	private TodoItem Item { get; set; }
+
+	[Parameter]
+	private Action OnCardChanged { get; set; }
+
+	void Complete( Guid itemId )
+	{
+		TodoService.CompleteItem( itemId );
+		OnCardChanged?.Invoke();
+	}
+
+	void Delete( Guid itemId )
+	{
+		TodoService.RemoveItem( itemId );
+		OnCardChanged?.Invoke();
+	}
+}

@@ -1,0 +1,88 @@
+﻿@page "/todo"
+
+@inject Services.ITodoService TodoService
+
+<div class="text-right">
+	<NavLink href="/todo/add" class="btn btn-primary btn-sm"><span class="oi oi-plus"></span> New Todo Item</NavLink><br />
+</div>
+
+@* Overdue accordian panel *@
+@if ( overdueItems.Count() > 0 )
+{
+	<div class="card mt-2">
+		<div class="card-header bg-danger" id="overdue">
+			<h5 class="mb-0 text-white">Overdue Items!</h5>
+		</div>
+		<div class="card-body">
+			<div class="card-columns">
+				@foreach ( var item in overdueItems )
+				{
+					<TodoCard Item="@item" OnCardChanged=Refresh />
+				}
+			</div>
+		</div>
+	</div>
+}
+
+@* Active accordian panel *@
+@if ( activeItems.Count() > 0 )
+{
+	<div class="card mt-2">
+		<div class="card-header" id="active">
+			<h5 class="mb-0">Active Items</h5>
+		</div>
+		<div class="card-body">
+			<div class="card-columns">
+				@foreach ( var item in activeItems )
+				{
+					<TodoCard Item="@item" OnCardChanged=Refresh />
+				}
+			</div>
+		</div>
+	</div>
+}
+
+@* Complete accordian panel *@
+@if ( completedItems.Count() > 0 )
+{
+	<div class="card mt-2">
+		<div class="card-header bg-success" id="completed">
+			<h5 class="mb-0 text-white">Completed Items</h5>
+		</div>
+		<div class="card-body">
+			<div class="card-columns">
+				@foreach ( var item in completedItems )
+				{
+					<TodoCard Item="@item" OnCardChanged=Refresh />
+				}
+			</div>
+		</div>
+	</div>
+}
+
+
+@functions {
+	IEnumerable<TodoItem> overdueItems;
+	IEnumerable<TodoItem> activeItems;
+	IEnumerable<TodoItem> completedItems;
+
+	/// <summary>
+	/// Initializes the filtered views.
+	/// </summary>
+	protected override void OnInit()
+	{
+		overdueItems = TodoService.GetItems().Where( i => !i.Completed && i.DueDate < DateTime.Now.Date );
+		activeItems = TodoService.GetItems().Where( i => !i.Completed && i.DueDate >= DateTime.Now.Date );
+		completedItems = TodoService.GetItems().Where( i => i.Completed );
+
+		base.OnInit();
+	}
+
+	/// <summary>
+	/// Triggers a UI refresh anytime a card has been updated.
+	/// </summary>
+	void Refresh()
+	{
+		StateHasChanged();
+	}
+}
